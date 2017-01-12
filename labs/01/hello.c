@@ -4,6 +4,6 @@
 
 int main(void) {
     printf("Hello World\n");
-    printf("My name is Christopher Salvador Márquez Álvarez \n");
-    return 0; 
+    printf("My name is Constanza Madrigal Reyes \n");
+    return 0;
 }
