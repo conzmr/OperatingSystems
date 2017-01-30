@@ -1,0 +1,68 @@
+#!/bin/bash
+
+echo \set terminal jpeg >>  gnuplot_script  
+echo \set title '"Number of files per directory"' >>  gnuplot_script 
+echo \set xlabel '"Directory"' >>  gnuplot_script 
+echo \set ylabel '"Number of files"' >>  gnuplot_script 
+echo \set autoscale >>  gnuplot_script 
+echo \set xtics rotate >>  gnuplot_script 
+echo \set nokey >> gnuplot_script
+echo "plot 'data.dot' using (column(0)):2:xtic(1) ti col with boxes lt -1 lw 2 lc rgb '#990000' fillstyle pattern 2" >>  gnuplot_script 
+
+echo \# NUMBER OF FILES PER DIRECTORY: 
+for dir in $(ls -d */)
+do
+	num=$(find $dir -type f | wc -l)
+	echo \# $dir : $num 
+	echo $dir $num >> data\.dot
+done
+
+cat gnuplot_script | gnuplot > graph.jpg
+
+gnome-open graph.jpg
+
+printf "\n" 
+subtotal=0
+file_names=( "README*" "Kconfig" "Kbuild" "Makefile" "*.c" "*.h" "*.pl")
+for i in "${file_names[@]}"
+do
+	num=$(find . -name $i| wc -l )
+	echo \# Number of $i files: $num
+	subtotal=`expr $num + $subtotal`
+done
+total=$(find . -type f | wc -l)
+echo \# Number of others files: `expr $total - $subtotal`
+echo \# Total number of files: $total
+
+printf "\n"
+
+mkdir C_FILES
+mkdir H_FILES
+num_times=0
+num_c=0
+num_h=0
+for file in $(find . -name '*.c' -o -name '*.h')
+do
+	num_times=`expr $num_times + $(grep -o "#include <linux/module.h>" $file | wc -l)`
+done
+echo \# Number of \times the "#include <linux/module.h>" appears: $num_times
+
+for file in $(find . -name '*.c' -o -name '*.h')
+do
+	 if [[ $file == *.c ]]; then
+               num_c=`expr $num_c + 1`
+		mv $file ./C_FILES
+            else
+               num_h=`expr $num_h + 1`
+		mv $file ./H_FILES
+            fi
+
+done
+
+printf "\n"
+echo \# Number of .c files: $num_c
+echo \# Number of .h files: $num_h
+
+exit
+
+
